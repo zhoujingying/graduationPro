@@ -2,15 +2,19 @@
 var express = require('express');
 var swig = require('swig');
 
-//1.创建app应用
-var app = express();
+//1.加载数据库及其他必要模块,并进行配置
+var mogooes = require('mongoose');
+var bodyParser = require('body-parser');     //用来处理浏览器发送的数据
 
+var app = express();
+app.use(bodyParser.urlencoded({extended:true}));       //req.body就可以获取到数据
 
 //2.配置应用模板
 app.engine('html',swig.renderFile);
 app.set('views','./views');
 app.set('view engine','html');
 swig.setDefaults({cache:false});   //取消缓存
+
 
 //3.静态文件托管
 app.use('/public',express.static(__dirname+'/public'));
@@ -25,10 +29,11 @@ app.use('/admin',require('./routers/admin'));
 app.use('/api',require('./routers/api'));
 app.use('/',require('./routers/main'));
 
-//5.加载数据库模块
-var mogooes = require('mongoose');
 
-//6.连接数据库并开启应用
+
+
+
+//5.连接数据库并开启应用
 mogooes.connect('mongodb://localhost:27017/blog',function(err){
     if (err) {
         console.log('connext err');

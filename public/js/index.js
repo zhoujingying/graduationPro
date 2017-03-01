@@ -1,85 +1,98 @@
-/**
- * Created by 毅 on 2016/8/28.
- */
 
 $(function() {
 
     var $loginBox = $('#loginBox');
     var $registerBox = $('#registerBox');
     var $userInfo = $('#userInfo');
+    
+   
+   //点击事件
 
-    //切换到注册面板
-    $loginBox.find('a.colMint').on('click', function() {
-        $registerBox.show();
-        $loginBox.hide();
-    });
-
-    //切换到登录面板
-    $registerBox.find('a.colMint').on('click', function() {
-        $loginBox.show();
-        $registerBox.hide();
-    });
-
-    //注册
-    $registerBox.find('button').on('click', function() {
-        //通过ajax提交请求
-        $.ajax({
-            type: 'post',
-            url: '/api/user/register',
-            data: {
-                username: $registerBox.find('[name="username"]').val(),
-                password: $registerBox.find('[name="password"]').val(),
-                repassword:  $registerBox.find('[name="repassword"]').val()
-            },
-            dataType: 'json',
-            success: function(result) {
-                $registerBox.find('.colWarning').html(result.message);
-
-                if (!result.code) {
-                    //注册成功
-                    setTimeout(function() {
-                        $loginBox.show();
-                        $registerBox.hide();
-                    }, 1000);
-                }
-
+    $('.mainRight').unbind('click').on('click',function(e){
+        var target = e.target;
+        if($(target).attr('role') == 'toRegist'){         //跳转
+            $registerBox.show();
+            $loginBox.hide();
+        }
+        if($(target).attr('role') == 'toLogin'){         //跳转
+            $loginBox.show();
+            $registerBox.hide();
+        }
+        if($(target).attr('role') == 'login'){          //登陆
+            if(checkObject.checkLoginName()){
+                 $.ajax({
+                    type:'post',
+                    url:"/api/user/login",
+                    data:{
+                        username: $loginBox.find('[name = "username"]').val(),
+                        password: $loginBox.find('[name = "password"]').val()
+                    },
+                    dataType:'json',
+                    success:function(result){
+                        //...
+                    }
+                 })
+            }else{
+                //错误码配置
+                console.log('登陆验证失败')
             }
-        });
-    });
-
-    //登录
-    $loginBox.find('button').on('click', function() {
-        //通过ajax提交请求
-        $.ajax({
-            type: 'post',
-            url: '/api/user/login',
-            data: {
-                username: $loginBox.find('[name="username"]').val(),
-                password: $loginBox.find('[name="password"]').val()
-            },
-            dataType: 'json',
-            success: function(result) {
-
-                $loginBox.find('.colWarning').html(result.message);
-
-                if (!result.code) {
-                    //登录成功
-                    window.location.reload();
-                }
+        }
+        if($(target).attr('role') == 'regist'){
+            if(checkObject.checkRegistName()){
+                $.ajax({
+                    type:"post",
+                    url:"/api/user/regist",
+                    data:{
+                            username: $registerBox.find('[name="username"]').val(),
+                            password: $registerBox.find('[name="password"]').val(),
+                            repassword:  $registerBox.find('[name="repassword"]').val()
+                    },
+                    dataType:"json",
+                    success:function(result){
+                        //...
+                    }
+                })
+            }else{
+                //错误码配置
+                console.log('登陆验证失败')
             }
-        })
+        }
     })
 
-    //退出
-    $('#logout').on('click', function() {
-        $.ajax({
-            url: '/api/user/logout',
-            success: function(result) {
-                if (!result.code) {
-                    window.location.reload();
-                }
+    var checkObject = {
+        checkLoginName:function(){
+            if(checkObject.emptyCheckLogin()){
+                return true;
+            }else{
+                return false;
             }
-        });
-    })
+        },
+        checkRegistName:function(){
+            if(checkObject.emptyCheckRegist()){
+                var password = $registerBox.find('[name="password"]').val();
+                var repassword = $registerBox.find('[name="repassword"]').val();
+                if(password == repassword){
+                    return true;
+                }
+            }else{
+                console.log('密码不一致');
+                return false;
+            }
+        },
+        emptyCheckRegist:function(){
+            if($('#registerBox input[name="username"]').val()!=""&&$('#registerBox input[name="password"]').val()!=""&&$('#registerBox input[name="repassword"]').val()!=""){
+                return true;
+            }else{
+                return false;
+            }
+        },
+         emptyCheckLogin:function(){
+            if($('#loginBox input[name="username"]').val()!=""&&$('#loginBox input[name="password"]').val()!=""){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
 
 })
