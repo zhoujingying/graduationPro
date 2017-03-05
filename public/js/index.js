@@ -29,15 +29,17 @@ $(function() {
                     },
                     dataType:'json',
                     success:function(result){
-                        //...
+                        if(!result.code){
+                            window.location.reload();     //重新刷新页面
+                                //权限TODO
+                        }else{
+                            $loginBox.find('.colWarning').html(result.message);
+                        }
                     }
                  })
-            }else{
-                //错误码配置
-                console.log('登陆验证失败')
             }
         }
-        if($(target).attr('role') == 'regist'){
+        if($(target).attr('role') == 'regist'){          //注册
             if(checkObject.checkRegistName()){
                 $.ajax({
                     type:"post",
@@ -49,14 +51,27 @@ $(function() {
                     },
                     dataType:"json",
                     success:function(result){
-                        //...
+                        //....弹出窗口
+                        $registerBox.find('.colWarning').html(result.message);
+                        if(!result.code){
+                            //成功
+                            window.location.reload();     //重新刷新页面
+                        }
                     }
-                })
-            }else{
-                //错误码配置
-                console.log('登陆验证失败')
+                })     
             }
         }
+        if($(target).attr('role') == 'logout'){        //推出
+            $.ajax({
+                url:'/api/user/logout',
+                success:function(result){
+                    if(!result.code){
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+        return false;
     })
 
     var checkObject = {
@@ -73,16 +88,17 @@ $(function() {
                 var repassword = $registerBox.find('[name="repassword"]').val();
                 if(password == repassword){
                     return true;
+                }else{
+                    $registerBox.find('.colWarning').html('两次输入的密码不一致');
+                    return false;
                 }
-            }else{
-                console.log('密码不一致');
-                return false;
             }
         },
         emptyCheckRegist:function(){
             if($('#registerBox input[name="username"]').val()!=""&&$('#registerBox input[name="password"]').val()!=""&&$('#registerBox input[name="repassword"]').val()!=""){
                 return true;
             }else{
+                $registerBox.find('.colWarning').html('注册项不能为空');
                 return false;
             }
         },
@@ -90,6 +106,7 @@ $(function() {
             if($('#loginBox input[name="username"]').val()!=""&&$('#loginBox input[name="password"]').val()!=""){
                 return true;
             }else{
+                $loginBox.find('.colWarning').html('用户名或密码不能为空');
                 return false;
             }
         }

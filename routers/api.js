@@ -66,17 +66,72 @@ router.post('/user/regist',function(req,res){
             return user.save();
         }
     }).then(function(userInfo){
-        responseData.message = '注册成功！'
+        responseData.message = '注册成功！';
+        responseData.userInfo = {
+                _id:userInfo._id,
+                username:userInfo.username
+            
+            }
+            req.cookies.set('userInfo',JSON.stringify({       //为客户端设置cookies信息
+                _id:userInfo._id,
+                username:userInfo.username 
+            }));
         res.json(responseData);
     })
 })
 
+/**
+ * 登陆逻辑
+ */
 router.post('/user/login',function(req,res){
-    // var username = req.body.username;
-    // var password = req.body.password;
-    // var repassword = req.body.repassword;
+    var username = req.body.username;
+    var password = req.body.password;
+
+    if(username == "" || password == ""){
+        responseData.code = 1;
+        responseData.message = "用户名或密码不能为空";
+        res.json(responseData);
+    }
+
+    userModel.findOne({
+        username:username,
+        password:password
+    }).then(function(userInfo){
+        if(!userInfo){
+            responseData.code = 2;
+            responseData.message = '用户名或密码错误';
+            res.json(responseData);
+        }else{
+            responseData.message = '登陆成功！';
+            responseData.userInfo = {
+                _id:userInfo._id,
+                username:userInfo.username
+            
+            }
+            req.cookies.set('userInfo',JSON.stringify({       //为客户端设置cookies信息
+                _id:userInfo._id,
+                username:userInfo.username 
+            }));
+            
+            res.json(responseData);
+        }
+
+        
+    })
+
+
+
     console.log('收到数据')
 
+})
+
+
+/**
+ * 退出
+ */
+router.get('/user/logout',function(req,res){
+    req.cookies.set('userInfo',null);        //将cookie设置为空
+    res.json(responseData);
 })
 
 module.exports = router;
